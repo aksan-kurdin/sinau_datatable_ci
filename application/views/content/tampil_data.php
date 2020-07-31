@@ -1,5 +1,6 @@
 <div class="col-md-12">
-    <?php echo form_open('#', array('id'=>'myform')); ?>
+    <?php echo form_open('#', array('id' => 'myform')); ?>
+    <?php echo form_hidden('txtId'); ?>
 
     <div id="info"></div>
 
@@ -11,9 +12,9 @@
     <div class="form-group">
         <label>KELAMIN</label>
         <select name="txtKelamin" class="form-control">
-        <option value="">KELAMIN</option>
-        <option value="L">Laki-Laki</option>
-        <option value="P">Perempuan</option>
+            <option value="">KELAMIN</option>
+            <option value="L">Laki-Laki</option>
+            <option value="P">Perempuan</option>
         </select>
     </div>
 
@@ -44,7 +45,7 @@
                 <th>Kelamin</th>
                 <th>Telp</th>
                 <th>KTP</th>
-                <th>#</th>
+                <th width="12%">#</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -53,43 +54,115 @@
 
 <script type="text/javascript">
     $('.ganti').attr('disabled', 'disabled');
-    function simpan(){
+
+    function simpan() {
         $.ajax({
             url: '<?php echo site_url('aplikasi/simpan') ?>',
             type: 'POST',
-            dataType:'json',
+            dataType: 'json',
             data: $('#myform').serialize(),
             encode: true,
-            success: function (data) {
-                if (!data.success){
-                    if(data.errors){
+            success: function(data) {
+                if (!data.success) {
+                    if (data.errors) {
                         $('#info').addClass('alert alert-danger').html(data.errors);
                         return false;
                     }
-                    else{
-                        $('#info').removeClass('alert alert-danger');
-                        alert(data.message);
-                        window.location.reload();
-                    }
+                } else {
+                    $('#info').removeClass('alert alert-danger');
+                    alert(data.message);
+                    window.location.reload();
                 }
             }
         })
     }
 
-    $(document).ready(function(){
+    function data_ubah(id) {
+        $('.simpan').attr('disabled', 'disabled');
+        $.ajax({
+            url: "<?php echo site_url('aplikasi/tampil_data_ubah/'); ?>",
+            type: 'POST',
+            dataType: 'json',
+            data: 'id=' + id,
+            encode: true,
+            success: function(data) {
+                $('.ganti').removeAttr('disabled');
+                $('input[name="txtId"]').val(data.id);
+                $('input[name="txtNama"]').val(data.nama);
+                $('select[name="txtKelamin"]').val(data.kelamin);
+                $('input[name="txtTelp"]').val(data.no_telp);
+                $('input[name="txtKTP"]').val(data.no_ktp);
+            }
+        });
+    }
+
+
+    function ganti() {
+        $.ajax({
+            url: '<?php echo site_url('aplikasi/simpan_ubah') ?>',
+            type: 'POST',
+            dataType: 'json',
+            data: $('#myform').serialize(),
+            encode: true,
+            success: function(data) {
+                if (!data.success) {
+                    if (data.errors) {
+                        $('#info').addClass('alert alert-danger').html(data.errors);
+                        return false;
+                    }
+                } else {
+                    $('#info').removeClass('alert alert-danger');
+                    alert(data.message);
+                    window.location.reload();
+                }
+            }
+        });
+    }
+
+    function hapus(id) {
+        if (confirm("Anda yakin mau hapus data ini?")) {
+            $.ajax({
+                url: '<?php echo site_url('aplikasi/hapus/'); ?>',
+                type: 'POST',
+                dataType: 'json',
+                data: 'id=' + id,
+                encode: true,
+                success: function(data) {
+                    if (!data.success) {
+                        if (data.errors) {
+                            $('#error').addClass('alert alert-danger').html(data.errors);
+                            return false;
+                        }
+                    } else {
+                        $('#error').removeClass('alert alert-danger').addClass('alert alert-success').html(data.message);
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 800);
+                    }
+                }
+            })
+        }
+    }
+
+    $(document).ready(function() {
         $('#pegawai').DataTable({
             "processing": true,
             "ajax": {
                 "url": "<?php echo site_url('aplikasi/data_pegawai') ?>",
-                "type": "POST"            
+                "type": "POST"
             },
             "sPaginationType": "full_numbers",
-            "order": [[0,"asc"]],
-            "columnDefs":[
-                {"bVisible":true,},
-                {"bSortable":false, "aTargets":["no-sort"]}
-            ]   
+            "order": [
+                [0, "asc"]
+            ],
+            "columnDefs": [{
+                    "bVisible": true
+                },
+                {
+                    "bSortable": false,
+                    "aTargets": ["no-sort"]
+                }
+            ]
         });
-    });        
-    
+    });
 </script>
